@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<head xmlns="http://www.w3.org/1999/html">
+    <title>{{ title }}</title>
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="flex-container">
+    <div class="flex-item">klockan är:{{time}}</div>
+    <script>
+        function postData() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("demo").innerHTML = this.responseText;
+                }
+            };
+            xhttp.open("POST", "/press/7", true);
+            xhttp.send();
+        }
+    </script>
+    <button class="flex-item" style="background-color: dodgerblue; height: 30rem;width: 100%; font-size: 7rem" onclick="postData()">Tryck
+        på garagedörren
+    </button>
+    <div class="flex-item" id="demo"></div>
+</div>
+</body>
+</html>
