@@ -2,28 +2,56 @@
 <head xmlns="http://www.w3.org/1999/html">
     <title>{{ title }}</title>
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <script>
+        function loadCameraImage() {
+            url='/cameraimg?date='+new Date().getTime();
+            var img = new Image();
+            var container = document.getElementById("cameraimg");
+
+            img.onload = function () {
+                while (container.firstChild) {
+                    container.removeChild(container.firstChild);
+                }
+                container.appendChild(img);
+            };
+            img.src = url;
+        }
+        function reload(){
+            window.setInterval(loadCameraImage, 2000);
+        }
+    </script>
 </head>
 
-<body>
+<body onload="reload()">
 
 <div class="flex-container">
-    <div class="flex-item">klockan är:{{time}}</div>
     <script>
         function postData() {
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
-                    document.getElementById("demo").innerHTML = this.responseText;
+                    document.getElementById("status").innerHTML = this.responseText;
                 }
             };
-            xhttp.open("POST", "/press/7", true);
+            xhttp.open("POST", "/press/6", true);
+            xhttp.send();
+        }
+        function turnonir(value) {
+                var url='/camerair/'+value;
+            var xhttp = new XMLHttpRequest();
+            xhttp.open("GET", url, true);
             xhttp.send();
         }
     </script>
     <button class="flex-item" style="background-color: dodgerblue; height: 30rem;width: 100%; font-size: 7rem" onclick="postData()">Tryck
         på garagedörren
     </button>
-    <div class="flex-item" id="demo"></div>
+    <div class="flex-item">
+        <div id="cameraimg" style="height: 480px"></div>
+        <button onclick="turnonir(0)">Turn off IR</button>
+        <button onclick="turnonir(1)">Turn on IR</button>
+    </div>
+    <div class="flex-item" id="status"></div>
 </div>
 </body>
 </html>

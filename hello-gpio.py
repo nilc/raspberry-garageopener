@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, render_template
+import urllib2
+from flask import Flask, render_template, Response
+from flask_httpauth import HTTPBasicAuth
 import datetime
 import time
 import RPi.GPIO as GPIO
 import threading
+import json
+
 app = Flask(__name__)
 
 servo_pin = 26
@@ -11,8 +15,19 @@ start_pos = 9
 
 servolock = threading.Lock()
 
+auth = HTTPBasicAuth()
 
-@app.route("/")
+users = {}
+camerapasswd = ''
+
+@auth.get_password
+def get_pw(username):
+    if username in users:
+        return users.get(username)
+    return None
+
+@app.route('/')
+@auth.login_required
 def hello():
     now = datetime.datetime.now()
     timeString = now.strftime("%Y-%m-%d %H:%M")
@@ -24,6 +39,7 @@ def hello():
 
 
 @app.route("/press/<duty>", methods=["POST"])
+@auth.login_required
 def press(duty):
     now = datetime.datetime.now()
     timeString = now.strftime("%Y-%m-%d %H:%M")
@@ -47,9 +63,27 @@ def press(duty):
         servolock.release()
     return render_template('status.html', **templateData)
 
+@app.route('/cameraimg')
+@auth.login_required
+def getimg():
+    response = urllib2.urlopen('http://garagecamera:81/snapshot.cgi?user=admin&pwd='+camerapasswd)
+    img=response.read();
+    return Response(img,mimetype='image/jpeg')
+
+@app.route('/camerair/<value>')
+@auth.login_required
+def setir(value):
+    response = urllib2.urlopen('http://garagecamera:81/camera_control.cgi?loginuse=admin&loginpas='+camerapasswd+'&param=14&value='+value)
+    return Response("ok",mimetype='plain/text')
+
+
 
 if __name__ == "__main__":
-    print("bajskorv:")
+    with open('passwd.json') as f:
+	users=json.load(f)
+    with open('camerapasswd', 'r') as myfile:
+        camerapasswd=myfile.read().replace('\n', '') 
+    print("read passwd files")
     # Configure the Pi to use pin names (i.e. BCM) and allocate I/O
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(servo_pin, GPIO.OUT)
