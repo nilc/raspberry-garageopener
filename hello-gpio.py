@@ -7,6 +7,7 @@ import time
 import RPi.GPIO as GPIO
 import threading
 import json
+import sys 
 
 app = Flask(__name__)
 
@@ -16,7 +17,7 @@ start_pos = 9
 servolock = threading.Lock()
 
 auth = HTTPBasicAuth()
-
+passwddir=sys.path[0]+'/'
 users = {}
 camerapasswd = ''
 
@@ -79,9 +80,10 @@ def setir(value):
 
 
 if __name__ == "__main__":
-    with open('passwd.json') as f:
+    print('passwddir is:'+passwddir)
+    with open(passwddir+'passwd.json') as f:
 	users=json.load(f)
-    with open('camerapasswd', 'r') as myfile:
+    with open(passwddir+'camerapasswd', 'r') as myfile:
         camerapasswd=myfile.read().replace('\n', '') 
     print("read passwd files")
     # Configure the Pi to use pin names (i.e. BCM) and allocate I/O
